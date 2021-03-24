@@ -1,40 +1,51 @@
-var num=0; j=0, arr=[], slicedArr=[];
-for(var i=1;i<=5000000;i++){
-    arr.push(i);
-}
+//console.log(new Date());
 
-console.log(new Date());
-
-// for(var i=0;i<arr.length;i++){
-//     j=1;
-//     while(j<=100)
-//     {
-//         num += 2;   
-//         j++;
-//     }
-//     if(i==arr.length - 1)
-//         console.log(arr[i]);
-// }
+//for(var i=0;i<arr.length;i++){
+//    j=1;
+//    while(j<=100)
+//    {
+//        num += 2;   
+//        j++;
+//    }
+//    if(i==arr.length - 1)
+//        console.log(arr[i]);
+//-}
 //console.log(num);
-console.log('before calling the function');
-console.log(new Date());
 
-for(var i=0;i<arr.length;i++)
+
+var num=0; j=0, arr=[], slicedArr=[];
+	for(var i=1;i<=10000000;i++){
+		arr.push(i);
+	}
+
+function withChunks()
 {
-    slicedArr = arr.slice(i, i+1000000);
-    i = arrChucks(i, slicedArr);
+	console.log(new Date());
+
+	for(var i=0;i<arr.length;i++)
+	{
+		slicedArr = arr.slice(i, i+999999);
+		i = arrChunks(i, slicedArr);
+		
+		setTimeout(function(){alert('after timeout');},0);
+	}
+	console.trace();
+	console.log(new Date());
 }
-function arrChucks(from, arr)
+
+function arrChunks(from, arr)
 {
     var num=0;
-    for(var i=from;i<arr.length;i++)
+    for(var i=0;i<arr.length;i++)
     {
-        num += 2;
+        j=0;
+		while(j<=1000)
+		{
+			num = num + 2;   
+			j++;
+		}
     }
-    console.log('end of the arrChunk function');
-    console.log('Execution Time '  +  new Date());
-    return i;
+	console.log('end of the arrChunks ' + from + ' - ' + (from+arr.length));
+	console.trace();
+    return from + arr.length;
 }
-
-console.log(new Date());
-console.log('end of the function');
