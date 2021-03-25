@@ -17,11 +17,26 @@
             var chunk = [];
             var start = new Date().getTime();
             var records = getRecords(10000000);
-            var chunk = records.slice(offset, chunkSize + offset);
-            var result = processData(chunk);
-            offset += chunkSize;
-            console.log(result);
-            console.log('execution time ' + (new Date().getTime() -  start) / 1000);
+            var result = 0;
+            //var chunk = records.slice(offset, chunkSize + offset);
+            //var result = processData(chunk);
+            //console.log(result);
+            //console.log('execution time ' + (new Date().getTime() -  start) / 1000);
+
+            function processChunkByChunk()
+            {
+                setTimeout(() => {
+                    console.log('chunk');
+                    var chunk = records.slice(offset, chunkSize + offset);
+                    offset += chunkSize;
+                    result += processData(chunk);
+                    if(offset<=records.length)
+                        processChunkByChunk();
+                    else
+                        console.log(result);
+                }, 0);
+            }
+            processChunkByChunk();
         }
 
         function processData(records)
@@ -29,7 +44,7 @@
             var result=0;
             for(var i=0;i<records.length;i++){
                 for (var j=0;j<1500;j++){ }
-                result += i;
+                result += records[i];
             }
             return result;
         }
