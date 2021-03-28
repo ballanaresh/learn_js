@@ -1,201 +1,240 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <link rel='stylesheet' href='style.css' />
 </head>
 
 <body>
-    <div class="players">
-        <label id='playerA'></label>
-        <span id='tic'>X</span>
-        <span id='toc'>O</span>
-        <label id='playerB'></label> 
+    <div id='inputs' align='center'>
+        <div class="">
+            <label>Player A Symbol</label>
+            <input type="text" id='playerASymbol' maxlength="1" />
+        </div>
+        <div class="">
+            <label>Player B Symbol</label>
+            <input type="text" id='playerBSymbol' maxlength="1" />
+        </div>
+        <span id='checkInput'></span>
+        <div class="">
+            <button type="button" id='startGame'>Start Game</button>
+        </div>
+    </div>
+    <div id='gameDiv'>
+        <div class="players">
+            <label id='playerA'></label>
+            <span id='tic'></span>
+            <span id='toc'></span>
+            <label id='playerB'></label>
+        </div>
+
+        <span id='message'>Choose player above</span>
+        <br />
+        <div class="tic-tac-toe" align='center'>
+            <table id="tic-tac-toe" cellspacing='0'>
+                <tbody>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <span id='gameOver'>
+                <p id='player'></p>
+            </span>
+        </div>
+        <br />
+        <p id='restart'>Restart</p>
     </div>
 
-    <span id='message'>Choose player above</span>
-    
-    <div class="tic-tac-toe">
-        <table id="tic-tac-toe" cellspacing='0'>
-            <tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+    <script>
+        var ticTacToeCells = Array(9).fill(null);
+        var players = [
+            {
+                player: 'Player A',
+                control: null,
+            },
+            {
+                player: 'Player B',
+                control: null,
+            }
+        ];
+        var activePlayer;
+        var playerASymbol = document.getElementById('playerASymbol');
+        playerASymbol.focus();
+        var playerBSymbol = document.getElementById('playerBSymbol');
+        var tic = document.getElementById('tic');
+        var toc = document.getElementById('toc')
+        var ticTacToe = document.getElementById('tic-tac-toe');
+        var gameOver = document.getElementById('gameOver');
+        var message = document.getElementById('message');
+        var restart = document.getElementById('restart');
+        var startGameBtn = document.getElementById('startGame');
 
-        <span id='gameOver'>
-            <p id='player'></p>
-        </span>
-    </div>
-
-    <p id='restart'>Restart</p>
-
-<script>
-    var players=[
-        {
-            player: 'Player A',
-            control: null,
-        },
-        {
-            player: 'Player B',
-            control: null,
-        }
-    ];
-    var activePlayer;
-    var tic = document.getElementById('tic');
-    var toc = document.getElementById('toc')
-    var ticTacToe = document.getElementById('tic-tac-toe');
-    var gameOver = document.getElementById('gameOver');
-    var message = document.getElementById('message');
-    var restart = document.getElementById('restart');
-
-    function picPlayerControl(event) {
-        if(!activePlayer){
+        function nextPlayer() {
             tic.classList.remove('active');
             toc.classList.remove('active');
-
-            event.currentTarget.classList.add('active');
-
-            if(event.target.id === 'tic'){
-                if(players[0].control == null){
-                    playerA.innerHTML = players[0].player;
-                    playerB.innerHTML = players[1].player;
-                    
-                    players[0].control = event.target.innerHTML;
-                    players[1].control = 'O';
-                }
-            }
-            else {
-                if(players[0].control == null){
-                    playerA.innerHTML = players[1].player;
-                    playerB.innerHTML = players[0].player;
-                    
-                    players[0].control = event.target.innerHTML;
-                    players[1].control = 'X';
-                }
-            }
-            activePlayer = players[0];
-            displayMessage(players[0].player + ' move');
+            if (!activePlayer || activePlayer.player == players[0].player)
+                tic.classList.add('active');
+            else if (activePlayer.player == players[1].player)
+                toc.classList.add('active');
         }
-    }
 
-    function displayMessage(msg) {
-        message.style.color = '#aaaaaa';
-        message.innerHTML = msg;
-    }
+        function displayMessage(msg) {
+            message.style.color = '#aaaaaa';
+            message.innerHTML = msg;
+        }
 
-    function placePlayerPicker(event) {
-        if(!event.target.innerHTML){
-            if(activePlayer) {
-                event.target.innerHTML = activePlayer.control;
-                var gameStatus = checkGaveOver();
-                if(gameStatus == 'Game Over') {
-                    gameOver.children[0].innerHTML = activePlayer.control + '<br/>Winner!';
-                    gameOver.style.display = 'block';
-                    restart.style.display='block';
-                    //alert('Game over,' + activePlayer.player + ' wins the game');
-                    return;
+        function declareGame(status, player) {
+            if (status == 1) { // player wins
+                gameOver.children[0].innerHTML = player.player + '<br/>Winner!';
+                gameOver.style.display = 'block';
+                return;
+            }
+            else if (status == 2) { //game drawn
+                gameOver.children[0].innerHTML = 'Game<br/>Draw';
+                gameOver.style.display = 'block';
+                return;
+            }
+
+        }
+
+        function placePlayerPicker(event) {
+            if (event.target.tagName == 'TD') {
+                var col = event.target.cellIndex;
+                var row = event.target.parentNode.rowIndex;
+                if (!ticTacToeCells[row * 3 + col]) {
+                    if (activePlayer) {
+                        ticTacToeCells[row * 3 + col] = activePlayer.control;
+                        event.target.innerHTML = activePlayer.control;
+                        var gameStatus = checkGameOver(activePlayer, ticTacToeCells);
+                        declareGame(gameStatus, activePlayer);
+                        activePlayer = players[0].player === activePlayer.player ? players[1] : players[0];
+                        nextPlayer();
+                        displayMessage(activePlayer.player + ' move');
+                    }
+                    else
+                        message.style.color = 'red';
                 }
-                else if(gameStatus == 'draw') {
-                    gameOver.children[0].innerHTML = 'Game<br/>Draw';
-                    gameOver.style.display = 'block';
-                    restart.style.display='block';
+            }
+        }
+
+        function checkGameOver(currentPlayer, cellsArr) {
+            for (var i = 0; i < 3; i++) {
+                //Horizontal
+                if (currentPlayer.control == cellsArr[i * 3 + 0] &&
+                    currentPlayer.control == cellsArr[i * 3 + 1] &&
+                    currentPlayer.control == cellsArr[i * 3 + 2]
+                ) {
+                    return 1;
                 }
 
+                //Vertical
+                if (currentPlayer.control == cellsArr[0 * 3 + i] &&
+                    currentPlayer.control == cellsArr[1 * 3 + i] &&
+                    currentPlayer.control == cellsArr[2 * 3 + i]
+                ) {
+                    return 1;
+                }
+            }
+
+            var hasNull = cellsArr.some(x => x === null)
+            if (!hasNull)
+                return 2;
+        }
+
+        function restartGame() {
+            document.getElementById('gameDiv').style.display = 'none';
+            document.getElementById('inputs').style.display = 'block';
+            playerBSymbol.value = '';
+            playerASymbol.value = '';
+            playerASymbol.focus();
+            gameOver.style.display = '';
+            if (activePlayer.control == 'X')
                 tic.classList.remove('active');
+            else
                 toc.classList.remove('active');
+            activePlayer = null;
+            playerA.innerHTML = null;
+            playerB.innerHTML = null;
+            displayMessage('Choose player above');
+            players[0].control = null;
+            players[1].control = null;
+            ticTacToeCells = Array(9).fill(null);
+            var cols;
+            var rows = ticTacToe.children[0].children;
+            for (var i = 0; i < rows.length; i++) {
+                cols = rows[0].children;
+                for (var j = 0; j < cols.length; j++) {
+                    rows[i].children[j].innerHTML = '';
+                    rows[i].children[j].style.backgroundColor = 'transparent';
+                }
+            }
+        }
 
-                if(tic.innerHTML === activePlayer.control)
-                    toc.classList.add('active');
+        function checkPlayerInputs() {
+            if (playerASymbol.value) {
+                if (playerBSymbol.value) {
+                    if (playerASymbol.value == playerBSymbol.value) {
+                        document.getElementById('checkInput').style.display = 'block';
+                        document.getElementById('checkInput').style.color = 'red';
+                        document.getElementById('checkInput').innerHTML = 'Symbols should not be same';
+                        startGameBtn.style.transform = 'scale(0)';
+                    }
+                    else {
+                        document.getElementById('checkInput').style.display = 'none';
+                        document.getElementById('checkInput').innerHTML = '';
+                        startGameBtn.style.transform = 'scale(1)';
+                    }
+                }
                 else
-                    tic.classList.add('active');
-                activePlayer = players[0].player === activePlayer.player ? players[1] : players[0];
-                displayMessage(activePlayer.player + ' move');
+                    playerBSymbol.focus();
             }
             else
-                message.style.color='red';
+                playerASymbol.focus();
         }
-    }
 
-    function checkGaveOver() {
-        var cellCount=0;
-        var hasNull = true;
-        var cols;
-        var rows = ticTacToe.children[0].children;
-        for(var i=0; i < rows.length; i++) {
-            cols = rows[0].children;
-            for(var j=0; j < cols.length; j++) {
-                hasNull = rows[i].children[j].innerHTML == '' ? true : false;
-                if(activePlayer.control == rows[i].children[j].innerHTML &&
-                    activePlayer.control == rows[i].children[j].nextElementSibling?.innerHTML &&
-                    activePlayer.control == rows[i].children[j].previousElementSibling?.innerHTML
-                ) {
-                    
-                    rows[i].children[0].style.backgroundColor ='rgba(0, 151, 136, .9)';
-                    rows[i].children[1].style.backgroundColor = 'rgba(0, 151, 136, .9)';
-                    rows[i].children[2].style.backgroundColor = 'rgba(0, 151, 136, .9)';
+        function startGame() {
+            startGameBtn.style.transform = 'scale(0)';
+            tic.innerHTML = playerASymbol.value;
+            toc.innerHTML = playerBSymbol.value;
 
-                    return 'Game Over';
-                }
-                else if(activePlayer.control == rows[0].children[j].innerHTML &&
-                    activePlayer.control == rows[1].children[j].innerHTML &&
-                    activePlayer.control == rows[2].children[j].innerHTML
-                ) {
-                    
-                    rows[0].children[j].style.backgroundColor = 'rgba(0, 151, 136, .9)';
-                    rows[1].children[j].style.backgroundColor = 'rgba(0, 151, 136, .9)';
-                    rows[2].children[j].style.backgroundColor = 'rgba(0, 151, 136, .9)';
-                    return 'Game Over';
-                }       
-            }
+            players[0].control = playerASymbol.value.toUpperCase();
+            players[1].control = playerBSymbol.value.toUpperCase();
+
+            playerA.innerHTML = players[0].player;
+            playerB.innerHTML = players[1].player;
+
+            activePlayer = players[0];
+
+            document.getElementById('gameDiv').style.display = 'block';
+            document.getElementById('inputs').style.display = 'none';
+
+            displayMessage(players[0].player + ' move');
+            nextPlayer();
         }
-        if(!hasNull)
-        {
-            return 'draw'
-        }
-    }
 
-    function restartGame() {
-        gameOver.style.display='';
-        restart.style.display='';
-        if(activePlayer.control == 'X')
-            tic.classList.remove('active');
-        else
-            toc.classList.remove('active');
-        activePlayer = null;
-        playerA.innerHTML=null;
-        playerB.innerHTML=null;
-        displayMessage('Choose player above');
-        players[0].control = null;
-        players[1].control = null;
-        var cols;
-        var rows = ticTacToe.children[0].children;
-        for(var i=0; i < rows.length; i++) {
-            cols = rows[0].children;
-            for(var j=0; j < cols.length; j++) {
-                rows[i].children[j].innerHTML = '';
-                rows[i].children[j].style.backgroundColor = 'transparent';
-            }
-        }
-    }
-
-    tic.addEventListener('click', picPlayerControl);
-    toc.addEventListener('click', picPlayerControl);
-    ticTacToe.addEventListener('click', placePlayerPicker);
-    restart.addEventListener('click', restartGame);
-</script>
+        //tic.addEventListener('click', picPlayerControl);
+        //toc.addEventListener('click', picPlayerControl);
+        ticTacToe.addEventListener('click', placePlayerPicker);
+        restart.addEventListener('click', restartGame);
+        playerASymbol.addEventListener('input', checkPlayerInputs);
+        playerBSymbol.addEventListener('input', checkPlayerInputs);
+        startGameBtn.addEventListener('click', startGame);
+    </script>
 
 </body>
+
 </html>
