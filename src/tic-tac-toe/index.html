@@ -150,6 +150,21 @@
                 }
             }
 
+            //Backward Diagonal
+            if (currentPlayer.control == cellsArr[0] &&
+                    currentPlayer.control == cellsArr[4] &&
+                    currentPlayer.control == cellsArr[8]
+                ) {
+                    return 1;
+                }
+            //Forward Diagonal
+            else if (currentPlayer.control == cellsArr[2] &&
+                    currentPlayer.control == cellsArr[4] &&
+                    currentPlayer.control == cellsArr[6]
+                ) {
+                    return 1;
+                }
+
             var hasNull = cellsArr.some(x => x === null)
             if (!hasNull)
                 return 2;
