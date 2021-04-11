@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #battery {
+            width: 150px;
+            height: 70px;
+            border: 5px solid #ccc;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0px 0px 5px 0px rgba(0,0,0,.15);
+        }
+
+        #battery:after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 50px;
+            right: -15px;
+            top: 10px;
+            background-color: #ccc;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 3px 0px 5px 0px rgba(0,0,0,.09);
+        }
+
+        #charge {
+            background-image: linear-gradient(to right, cyan, darkcyan);
+            /*background-color: darkcyan;  rgb(0, 139, 139) */
+            width: 0px;
+            height: 100%;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id='battery'>
+        <div id='charge'></div>
+    </div>
+    <button id='start'>Start</button>
+    <button id='stop'>Stop</button>
+
+    <script>
+        var intervalWidth = 1;
+        var childWidth = 0;
+        timeStamp = 0;
+        var globalId = null;
+        const charge = document.getElementById('charge');
+        const start = document.getElementById('start');
+        const stop = document.getElementById('stop');
+
+        const getCharge = () => {
+            let parentWidth = charge.parentNode.clientWidth;
+            if (charge.clientWidth < parentWidth){
+                childWidth += intervalWidth;
+                charge.style.width = childWidth + 'px';
+                globalId = requestAnimationFrame(getCharge);
+            }
+            else {
+               //charge.style.width = 0;
+               //childWidth = 0;
+               cancelAnimationFrame(globalId);
+               //globalId = requestAnimationFrame(getCharge);
+            }
+        }
+
+        const startCharge = () => {
+            console.log('started');
+            if(charge.clientWidth == 150){
+                childWidth = 0;
+                charge.style.width = 0;
+            }
+            globalId = requestAnimationFrame(getCharge);
+        }
+
+        const stopCharge = () => {
+            console.log('stopped');
+            cancelAnimationFrame(globalId);
+            //charge.style.width = 0;
+            //timeStamp = 0;
+        }
+
+        start.addEventListener('click', startCharge);
+        stop.addEventListener('click', stopCharge);
+
+    </script>
+</body>
+
+</html>
