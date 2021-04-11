@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<style>
+    #listDiv {
+        box-shadow: 0px 2px 5px 0px rgb(0 0 0 / 20%);
+        border-radius: 5px;
+        max-height: 300px;
+        overflow: auto;
+        position: absolute;
+        background-color: white;
+        width: calc(100% - 32px);
+    }
+    #listDiv p{
+        padding: 7px 15px;
+        margin: 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    #listDiv p:hover
+    {
+        background-color: #f5f5f5;
+    }
+
+    i.fa-cog {
+        display: none;
+    }
+</style>    
+</head>
+<body>
+    
+    <div class="row">
+        <div class="form-group col-sm-4">
+            <input type='text' id='txtSearch' class="form-control" />
+            <div id='listDiv'>
+                <div id='list'></div>
+            </div>
+        </div>
+        <div class="col-sm-2 form-group">
+            <i id='spinner' class="fa fa-cog fa-spin"></i>
+            <button id='debounce'>De Bounce</button>
+        </div>
+    </div>
+    <div class="row">
+        <p id='activeItem'></p>
+    </div>
+<script>
+    var itemCollection = [];
+    const searchBox = document.getElementById('txtSearch');
+    const button = document.getElementById('debounce');
+    const list = document.getElementById('list');
+    const activeItem = document.getElementById('activeItem');
+    const spinner = document.getElementById('spinner');
+    
+    const debouncing = (fun, delay) => {
+        let debounceTimer;
+        return function(){
+            const context = this;
+            const args = arguments;
+            clearTimeout(debounceTimer);
+            debounceTimer =  setTimeout(() => fun.apply(context, args), delay);
+        }
+    }
+
+    const getMasters = (event) => {
+        spinner.style.display = 'inline-block';
+        //alert("getting data from the masters after 3seconds dalay until hot having any click event");
+        getApiData('https://restcountries.eu/rest/v2/all')
+        .then((response)=> {
+            list.innerHTML = '';
+            itemCollection = filterData(response.data, event.target.value);
+            var li;
+            itemCollection.forEach(element => {
+                li = document.createElement('p');
+                li.id = element.alpha2Code;
+                li.innerHTML = element.name.toUpperCase();
+                
+                li.addEventListener('click', getCurrentItem);
+
+                list.appendChild(li);
+            });
+            list.style.display='block';
+            spinner.style.display = 'none';
+        })
+        .catch((error) => {
+            console.log('Error ' + error)
+        });
+    }
+
+    getCurrentItem = (event) => {
+        let currentItem = itemCollection.find(x=>x.alpha2Code == event.target.id);
+        if(currentItem){
+            searchBox.value = currentItem.name;
+            activeItem.innerHTML = JSON.stringify(currentItem);
+            list.style.display='none';
+        }
+    }
+
+    const filterData = (arrData, filterText) => {
+        return arrData.filter(x => x.name.toLowerCase().includes(filterText.toLowerCase()));
+    }
+
+    const getApiData = (uri) => {
+        return new Promise((resolve, reject) => {
+            var request = new XMLHttpRequest();
+            request.open('GET', uri, true);
+
+            request.onload = function(){
+                if(this.status >= 200 && this.status <= 400)
+                    resolve({status: 1, data : JSON.parse(this.response)});
+                else
+                    reject({status: 0, message: this.response});
+            }
+
+            request.onerror = function(){
+                reject({status: 0, data: this.response});
+            }
+
+            request.send();
+        });
+    }
+
+    const getFocus=()=>{
+        console.log('focussed');
+    }
+
+    //button.addEventListener('click', debouncing(getMasters, 300), false);
+    searchBox.addEventListener('keydown', debouncing(getMasters, 300), false);
+    searchBox.addEventListener('focusin', getFocus, false);
+</script>
+</body>
+</html>
